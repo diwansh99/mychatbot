@@ -44,6 +44,7 @@ app.listen(port , function(){
   console.log("Server is running on" + port);
 });
 
+<<<<<<< HEAD
 
 const bot = new Bootbot({
   accessToken = ACCESS_TOKEN;
@@ -90,5 +91,7 @@ bot.hear('setup' , (payload,chat) => {
     finishing(convo));
     })
   }
-  
+
 })
+
+//hi this is a comment !
