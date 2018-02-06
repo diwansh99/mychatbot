@@ -74,16 +74,16 @@ bot.hear('setup' , (payload,chat) => {
     })
   }
 
-  getBucketReadKey = (convo) =>{
+   const getBucketReadKey = (convo) =>{
     convo.ask("What's your Bucket Readkey?" , (payload , convo) => {
       var Readkey = payload.message.text;
       convo.set('read_key' , Readkey);
-      convo.say("Setting Read_key as" + Readkey).then(() =>
+      convo.say("Setting read_key as" + Readkey).then(() =>
     getBucketWriteKey(convo));
     })
   }
 
-  getBucketWriteKey = (convo) =>{
+   const getBucketWriteKey = (convo) =>{
     convo.ask("What's your Bucket Writekey?" , (payload,convo) => {
       var Writekey = payload.message.text;
       convo.set('write_key' , Writekey);
@@ -92,6 +92,51 @@ bot.hear('setup' , (payload,chat) => {
     })
   }
 
+
+ const finishing = (convo) => {
+   var newConfigInfo = {
+     slug : convo.get('slug'),
+     read_key : convo.get('Readkey'),
+     write_key : convo.get('Writekey')
+   }
+
+   config.bucket = newConfigInfo ;
+   convo.say("All Set :) ");
+   convo.end();
+ }
+
+
+chat.conversation((convo) => {
+  getBucketSlug(convo)
 })
 
-//hi this is a comment !
+})
+
+bot.hear(['hello' , 'hey' , 'sup'] , (payload,chat) => {
+  chat.getUserProfile().then((user) => {
+    chat.say(`Hey ${user.first_name}, How are you today?`)
+  })
+})
+
+
+bot.hear('create' , (payload,chat) => {
+  chat.conversation((convo) => {
+    convo.ask("What would you like your reminder to be? etc 'I have an appointment tommorow from 10am to 11 am' the information will bw added automatically" , (payload , convo) => {
+      datatime = chrono.parseDate(payload.message.text);
+      var params= {
+        write_key : config.bucket.write_key,
+        type_slug : 'reminders',
+        title : payload.message.text,
+        metafields : [
+          {
+            key : 'date',
+            type : 'text',
+            value : datatime
+          }
+        ]
+      }
+
+      
+    })
+  })
+})
