@@ -3,7 +3,7 @@ const bodyparser = require('body-parser');
 const request = require('request');
 const app = express();
 
-const bootbot = require('Bootbot');
+const Bootbot = require('bootbot');
 const Cosmic = require('cosmicjs');
 require('dotenv').config();
 const chrono = require('chrono-node');
@@ -17,8 +17,8 @@ var port = 5000 || process.env.PORT;
 app.use(bodyparser.urlencoded({extended : false}));
 app.use(bodyparser.json());
 var VERIFY_TOKEN = '1234';
-var ACCESS_TOKEN ='EAAYdsMqggCIBAFxlHR52UmYMQfb3fuUMUK0GZB5Na8HZBrksRbVPyW5t3mQJouARtvfOcUavsKBMpB5lsI5peXgUEbsUhvL7S8u8lNGOOPD02uTgb1vxnvPQ9szgstPrqplvqkH8KtpxuFYQ0stlEmA01pf0N8ToiwmhqRmGBRwaZC5R0NV';
-var APP_SECRET = 'some secret string of numbers and letters';
+var ACCESS_TOKEN ='EAAYdsMqggCIBANm1g903ZA9NoDnzBoMoZCInSdQdvzHqM3l5ltqRwJkVHcpbAcLt57i2zIb1fEjZAk7mAovB9cDWdZBrZACmLxeg7vbz0ZByZB3uMgEdQIjlFxK5oZAbmsVhE4ZBLI94q5Mpch7n0rZB8nNsB8SGC9QcwMumchyZAFivc3kJlbn8q5F';
+var APP_SECRET = '489c1e26dd9c407b49b25f3529096682';
 
 
 
@@ -26,7 +26,7 @@ app.get('/' , function(req,res){
   res.send("hello there");
 });
 
-app.get('/webhook/', function(req, res) {
+app.get('/webhook', function(req, res) {
 
 
   if (req.query['hub.verify_token'] === VERIFY_TOKEN){
@@ -44,12 +44,12 @@ app.listen(port , function(){
   console.log("Server is running on" + port);
 });
 
-<<<<<<< HEAD
+
 
 const bot = new Bootbot({
-  accessToken = ACCESS_TOKEN;
-  verifyToken = VERIFY_TOKEN;
-  appSecret = APP_SECRET;
+  accessToken : ACCESS_TOKEN,
+  verifyToken : VERIFY_TOKEN,
+  appSecret : APP_SECRET
 })
 
 bot.setGreetingText("Hello , I am here to solve your problems")
@@ -59,8 +59,9 @@ bot.setGetStartedButton((payload , chat) => {
   {
     chat.say("Hello my name is Note Buddy and I am here to help you")
 
-  }
+
   BotUserId = payload.sender.id
+
 }
 );
 
@@ -117,6 +118,12 @@ bot.hear(['hello' , 'hey' , 'sup'] , (payload,chat) => {
     chat.say(`Hey ${user.first_name}, How are you today?`)
   })
 })
+bot.hear('config', (payloadc, hat) => {
+  if(JSON.stringify(config.bucket) === undefined){
+    chat.say("No config found :/ Be sure to run 'setup' to add your bucket details")
+  }
+  chat.say("A config has been found :) "+ JSON.stringify(config.bucket))
+})
 
 
 bot.hear('create' , (payload,chat) => {
@@ -135,8 +142,46 @@ bot.hear('create' , (payload,chat) => {
           }
         ]
       }
+Cosmic.addObject(config,params,function(err , response){
+  if(!err){
+    eventEmitter.emit('new' , response.object.slug, datatime)
 
-      
+    convo.say("reminder added correctly :)")
+    convo.end()
+  }
+  else{
+    convo.say("there seems to be a problem...");
+    convo.end();
+  }
+})
     })
   })
 })
+
+
+bot.hear('help' , (payload,chat) => {
+  chat.say("Here are the following commands for use");
+  chat.say("'create' : add a new reminder");
+  chat.say("'setup' : add your bucket info such as slug and writekey");
+  chat.say("'config' : list your current bucket config")
+})
+
+bot.hear('active', (payload, chat) => {
+  chat.say('finding all of your ongoing reminders.')
+})
+
+eventEmitter.on('new' , function(itemSlug,time){
+  schedule.scheduleJob(time, function(){
+    Cosmic.getObject(config, {slug : itemSlug} , function(err,response){
+      if(response.metadata.date == new Data(time).toISOString()){
+        bot.say(BotUserId , response.object.title)
+        console.log('firing reminder')
+      }
+      else{
+        eventEmitter.emit('new' , response.object.slug , response.object.metafield.date.value)
+        console.log('times do not match checking again at' + response.object.metadata.date)
+      }
+    })
+  })
+})
+bot.start()
